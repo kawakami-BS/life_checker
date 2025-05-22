@@ -1,6 +1,8 @@
  // Expressの読み込み
 const express = require("express");
- const app = express();
+const app = express();
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
  // corsをインポート
 const cors = require('cors')
  // corsをインポートして、アプリケーションに適用させる記述
@@ -9,15 +11,13 @@ app.use(cors({
  methods: ['GET', 'POST', 'PUT', 'DELETE'],
  credentials: true,
 }));
-const {PrismaClient} = request('@prisma/client');
-const prisma = new PrismaClient();
 
 app.get("/users",async(req,res) =>{
   try{
     const AllUsers = await prisma.users.findMany();
     res.json(AllUsers)
   }catch(error){
-    console.log(error)
+    console.log
   }
 })
 app.use(express.json());
