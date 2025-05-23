@@ -1,5 +1,6 @@
 <script setup>
 import Timer from './Timer.vue';
+import Header from './Header.vue';
 import { onMounted } from 'vue';
 import { useUserStore } from '../stores/userStore' //追加
 const userStore = useUserStore(); //追加
@@ -15,6 +16,7 @@ onMounted(async()=> {
 </script>
  <template>
   <div class="main">
+    <Header/>
     <div class="user_field" v-for="user in userStore.users" :key="user.id">
       <Timer :user="user"/>
     </div>
@@ -22,11 +24,10 @@ onMounted(async()=> {
 </template> 
 <style scoped>
 .main{
-  height: 100%;
+  height: 100vh;
   width: 100%;
   display: flex;
-}
-.user_field{
-  width: 100%;
+  flex-direction: column;
+  background-color: #FFFFF0;
 }
 </style>

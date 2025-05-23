@@ -1,111 +1,127 @@
 <script setup>
-import { ref, computed, onMounted,onUnmounted } from 'vue';
-
+import { ref, onUnmounted,computed } from 'vue';
 const props = defineProps({
   user: Object
 })
-const month = ref(null);
-const day = ref(null);
 const countdownText = ref('');
 let timer = null;
 
-function startCountdown() {
-  if (!month.value || !day.value) {
-    countdownText.value = '月日を正しく入力してください。';
+const showTimer=ref(false);
+const target =new Date(props.user.deadlineDate);
+const birthdayJP = computed(() => toJPDate(props.user.birthday));
+const todayJP = computed(() => toJPDate(props.user.todayDate));
+const deadlineDateJP = computed(() => toJPDate(props.user.deadlineDate))
+
+//JP時間に変更する関数
+function toJPDate(dateStr) {
+  return new Date(dateStr).toLocaleDateString('ja-JP', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+//時間を取得し引き算をする関数
+async function startCountdown(){
+  clearInterval(timer);
+  timer = setInterval(() => {
+  const now = new Date();
+  const diff = target - now;
+
+  if (diff <= 0) {
+    clearInterval(timer);
+    countdownText.value = '時間切れ！';
     return;
   }
-
-  const now = new Date();
-  let target = new Date(now.getFullYear(), month.value - 1, day.value);
-
-  // 今日より前なら翌年に設定
-  if (target < now) {
-    target.setFullYear(now.getFullYear() + 1);
-  }
-
-  clearInterval(timer);
-
-  timer = setInterval(() => {
-    const now = new Date();
-    const diff = target - now;
-
-    if (diff <= 0) {
-      clearInterval(timer);
-      countdownText.value = '時間切れ！';
-      return;
-    }
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((diff / (1000 * 60)) % 60);
-    const seconds = Math.floor((diff / 1000) % 60);
-
-    countdownText.value = `残り: ${days}日 ${hours}時間 ${minutes}分 ${seconds}秒`;
+    countdownText.value=formatDuration(diff);
   }, 1000);
 }
 
+//表示の際にデータを整える関数
+function formatDuration(ms) {
+  let seconds = Math.floor(ms / 1000);
+  const years = Math.floor(seconds / (60 * 60 * 24 * 365));
+  seconds %= (60 * 60 * 24 * 365);
+  const months = Math.floor(seconds / (60 * 60 * 24 * 30)); // ざっくり30日
+  seconds %= (60 * 60 * 24 * 30);
+  const days = Math.floor(seconds / (60 * 60 * 24));
+  seconds %= (60 * 60 * 24);
+  const hours = Math.floor(seconds / (60 * 60));
+  seconds %= (60 * 60);
+  const minutes = Math.floor(seconds / 60);
+  seconds %= 60;
+  return `${years}年${months}月${days}日${hours}時間${minutes}分${seconds}秒`;
+}
 // コンポーネントが破棄されたらタイマーも解除
 onUnmounted(() => {
   clearInterval(timer);
 });
 </script>
 <template>
-  <div class="timer">
-    <div class="timer-content">
-      <div class="timer-center-content">
-        <h2>カウントダウン</h2>
-          <div class="inputs">
-          <label>
-            月:
-            <input v-model.number="month" type="number" min="1" max="12" />
-          </label>
-          <label>
-            日:
-            <input v-model.number="day" type="number" min="1" max="31" />
-          </label>
-          <button @click="startCountdown">スタート</button>
-        </div>
-        <div>
-          {{ user.name }}
-        </div>
-        <div class="countdown">
-          {{ countdownText }}
+    <div class="timer">
+      <div class="timer-content">
+        <div class="timer-center">
+          <div class="user-name">
+            name:{{ user.name }}
+          </div>
+          <div class="birthday">
+            誕生日:
+            {{ birthdayJP }}
+          </div>
+          <div class="today">
+            今日:
+            {{ todayJP }}
+          </div>
+          <div class="deadlineDate">
+            目標日時:
+            {{ deadlineDateJP }}
+            <button type="button" class="start-button" @click="startCountdown;showTimer=true">スタート</button>
+          </div>
+          <h2>カウントダウン</h2>
+          <div class="countdown" v-if="showTimer">
+            {{ countdownText }}
+          </div>
+          <div class="countdown" v-else>
+            0
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</template> 
+  </template> 
 <style scoped>
 .timer{
-  width: 100%;
-  height: 100%;
-  background-color: antiquewhite;
-  display: flex;
+  /* display: flex; */
+  margin: 5px;
 }
 .timer-content{
-  width: 500px;
+  width: 400px;
   height: 300px;
-  background-color: aquamarine;
+  border-radius: 10px;
+  background-color: #90dd72;
   display: flex;
-  justify-content: center;
   align-items: center;
 }
-.inputs {
-  margin-bottom: 20px;
-}
-input {
-  width: 60px;
-  padding: 4px;
-  margin-left: 5px;
-  margin-right: 15px;
+.timer-center{
+  width: 100%;
 }
 .countdown {
+  margin: 1%;
   font-size: 1.2rem;
   color: green;
 }
-button {
-  padding: 6px 12px;
-  font-size: 1rem;
+.start-button {
+  margin-bottom: 20px;
+  padding: 0.4rem 1rem;
+  background-color: #73c444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.8rem;
   cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}.start-button:hover{
+  background-color:#cc3030;
 }
 </style>
