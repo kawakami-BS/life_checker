@@ -17,8 +17,10 @@ onMounted(async()=> {
  <template>
   <div class="main">
     <Header/>
-    <div class="user_field" v-for="user in userStore.users" :key="user.id">
-      <Timer :user="user"/>
+    <div class="users">
+      <div class="user-field" v-for="user in userStore.users" :key="user.id">
+        <Timer :user="user"/>
+      </div>
     </div>
   </div>
 </template> 
@@ -29,5 +31,8 @@ onMounted(async()=> {
   display: flex;
   flex-direction: column;
   background-color: #FFFFF0;
+}
+.users{
+  display: flex;
 }
 </style>

@@ -3,14 +3,17 @@ import { ref, onUnmounted,computed } from 'vue';
 const props = defineProps({
   user: Object
 })
-const countdownText = ref('');
-let timer = null;
 
+const countdownText = ref('');
+const countupText = ref('')
+let timer = null;
 const showTimer=ref(false);
-const target =new Date(props.user.deadlineDate);
+const birthdaytime =new Date(props.user.birthday);
+
+const now=new Date();
+//表示のための処理
 const birthdayJP = computed(() => toJPDate(props.user.birthday));
-const todayJP = computed(() => toJPDate(props.user.todayDate));
-const deadlineDateJP = computed(() => toJPDate(props.user.deadlineDate))
+const todayJP = computed(() => toJPDate(now));
 
 //JP時間に変更する関数
 function toJPDate(dateStr) {
@@ -24,34 +27,74 @@ function toJPDate(dateStr) {
 //時間を取得し引き算をする関数
 async function startCountdown(){
   clearInterval(timer);
+  const deadlineDate = props.user.days_left*365.2425 * 24 * 60 * 60 * 1000;
+  const target=birthdaytime.getTime()+deadlineDate;
   timer = setInterval(() => {
-  const now = new Date();
-  const diff = target - now;
+  countdownText.value=formatDuration(target);
+  countupText.value=formatDuration(birthdaytime)
 
-  if (diff <= 0) {
-    clearInterval(timer);
-    countdownText.value = '時間切れ！';
-    return;
+  }, 1);
+}
+
+function formatDuration(startDate) {
+  let start = new Date(startDate);
+  let end = new Date();
+
+  if (end < start) [start, end] = [end, start]; // 順番逆なら入れ替え
+
+  let years = end.getFullYear() - start.getFullYear();
+  let months = end.getMonth() - start.getMonth();
+  let days = end.getDate() - start.getDate();
+  let hours = end.getHours() - start.getHours();
+  let minutes = end.getMinutes() - start.getMinutes();
+  let seconds = end.getSeconds() - start.getSeconds();
+  let minseconds=end.getMilliseconds(1) - start.getMilliseconds(1);
+
+  if (seconds < 0) {
+    seconds += 60;
+    minutes--;
   }
-    countdownText.value=formatDuration(diff);
-  }, 1000);
+
+  if (minutes < 0) {
+    minutes += 60;
+    hours--;
+  }
+
+  if (hours < 0) {
+    hours += 24;
+    days--;
+  }
+
+  if (days < 0) {
+    months--;
+    const prevMonth = new Date(end.getFullYear(), end.getMonth(), 0);
+    days += prevMonth.getDate(); // 月末補正
+  }
+
+  if (months < 0) {
+    months += 12;
+    years--;
+  }
+
+  if(minseconds < 0){
+    minseconds=Math.abs(minseconds)
+  }
+
+  if(minutes<10){
+    if(seconds <10){
+      return `${years}年${months}ヵ月${days}日${hours}時間0${minutes}分0${seconds}.${minseconds}秒`;
+    }else{
+      return `${years}年${months}ヵ月${days}日${hours}時間0${minutes}分${seconds}.${minseconds}秒`;
+    }
+  }else{
+    if(seconds <10){
+      return `${years}年${months}ヵ月${days}日${hours}時間${minutes}分0${seconds}.${minseconds}秒`;
+    }else{
+      return `${years}年${months}ヵ月${days}日${hours}時間${minutes}分${seconds}.${minseconds}秒`;
+    }
+  }
 }
 
-//表示の際にデータを整える関数
-function formatDuration(ms) {
-  let seconds = Math.floor(ms / 1000);
-  const years = Math.floor(seconds / (60 * 60 * 24 * 365));
-  seconds %= (60 * 60 * 24 * 365);
-  const months = Math.floor(seconds / (60 * 60 * 24 * 30)); // ざっくり30日
-  seconds %= (60 * 60 * 24 * 30);
-  const days = Math.floor(seconds / (60 * 60 * 24));
-  seconds %= (60 * 60 * 24);
-  const hours = Math.floor(seconds / (60 * 60));
-  seconds %= (60 * 60);
-  const minutes = Math.floor(seconds / 60);
-  seconds %= 60;
-  return `${years}年${months}月${days}日${hours}時間${minutes}分${seconds}秒`;
-}
 // コンポーネントが破棄されたらタイマーも解除
 onUnmounted(() => {
   clearInterval(timer);
@@ -61,58 +104,79 @@ onUnmounted(() => {
     <div class="timer">
       <div class="timer-content">
         <div class="timer-center">
-          <div class="user-name">
-            name:{{ user.name }}
-          </div>
-          <div class="birthday">
-            誕生日:
-            {{ birthdayJP }}
-          </div>
-          <div class="today">
-            今日:
-            {{ todayJP }}
-          </div>
-          <div class="deadlineDate">
-            目標日時:
-            {{ deadlineDateJP }}
-            <button type="button" class="start-button" @click="startCountdown;showTimer=true">スタート</button>
-          </div>
-          <h2>カウントダウン</h2>
-          <div class="countdown" v-if="showTimer">
-            {{ countdownText }}
-          </div>
-          <div class="countdown" v-else>
-            0
+          <div class="timer-text">
+            <div class="user-name">
+              {{ user.name }}
+              <button type="button" class="start-button" @click="startCountdown();showTimer=true">スタート</button>
+            </div>
+            <div class="birthday">
+              誕生日:
+              {{ birthdayJP }}
+            </div>
+            <div class="today">
+              今日:
+              {{ todayJP }}
+            </div>
+            <div class="deadlineDate">
+              目標日時:
+              {{ user.days_left }}歳
+            </div>
+            <div class="count" v-if="showTimer">
+              <h2>期限</h2>
+              <div class="down">
+                {{ countdownText }}
+              </div>
+              <h2>生きた時間</h2>
+              <div class="up">
+                {{ countupText }}
+              </div>
+            </div>
+            <div class="count" v-else>
+              0
+            </div>
           </div>
         </div>
       </div>
     </div>
   </template> 
 <style scoped>
+h2{
+  font-size: 20px;
+}
 .timer{
-  /* display: flex; */
   margin: 5px;
 }
 .timer-content{
+  padding: 1%;
   width: 400px;
-  height: 300px;
+  height: 250px;
   border-radius: 10px;
   background-color: #90dd72;
-  display: flex;
-  align-items: center;
 }
 .timer-center{
   width: 100%;
 }
-.countdown {
+.timer-text{
   margin: 1%;
-  font-size: 1.2rem;
-  color: green;
+}
+.user-name{
+  font-size: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+.count {
+  margin: 1%;
+  font-size: 1.4rem;
+  font-weight: bold;
+  color:#cc3030;
+}
+.down,.up{
+  font-weight: bold;
+  color:#cc3030;
 }
 .start-button {
-  margin-bottom: 20px;
   padding: 0.4rem 1rem;
-  background-color: #73c444;
+  background-color: #61aa36;
   color: white;
   border: none;
   border-radius: 6px;

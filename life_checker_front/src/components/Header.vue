@@ -10,6 +10,9 @@ const searchKeyword = ref('');
       <div class="header-title-container">
         LifeChecker
       </div>
+      <div class="header-form">
+
+      </div>
     </div>
     <div class="header-search">
       <form @submit="handleSubmit" class="search-container">
@@ -51,6 +54,13 @@ const searchKeyword = ref('');
 .header-title-container{
   font-weight: bold;
   font-size: 30px;
+  margin-right:20px ;
+}
+.header-form{
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  background-color: #8f543a;
 }
 .search-container {
   display: flex;
@@ -62,7 +72,7 @@ const searchKeyword = ref('');
 
 .search-input {
   flex: 1;
-  padding: 0.4rem 0.6em;
+  padding: 0.4rem 0.8em;
   background-color: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
