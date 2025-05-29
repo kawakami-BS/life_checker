@@ -37,10 +37,11 @@ async function startCountdown(){
 }
 
 function formatDuration(startDate) {
+  const pad = (n, d = 2) => String(n).padStart(d, '0');
+
   let start = new Date(startDate);
   let end = new Date();
-
-  if (end < start) [start, end] = [end, start]; // 順番逆なら入れ替え
+  if (end < start) [start, end] = [end, start];
 
   let years = end.getFullYear() - start.getFullYear();
   let months = end.getMonth() - start.getMonth();
@@ -48,51 +49,35 @@ function formatDuration(startDate) {
   let hours = end.getHours() - start.getHours();
   let minutes = end.getMinutes() - start.getMinutes();
   let seconds = end.getSeconds() - start.getSeconds();
-  let minseconds=end.getMilliseconds(1) - start.getMilliseconds(1);
+  let milliseconds = end.getMilliseconds() - start.getMilliseconds();
 
+  if (milliseconds < 0) {
+    milliseconds += 1000;
+    seconds--;
+  }
   if (seconds < 0) {
     seconds += 60;
     minutes--;
   }
-
   if (minutes < 0) {
     minutes += 60;
     hours--;
   }
-
   if (hours < 0) {
     hours += 24;
     days--;
   }
-
   if (days < 0) {
     months--;
     const prevMonth = new Date(end.getFullYear(), end.getMonth(), 0);
-    days += prevMonth.getDate(); // 月末補正
+    days += prevMonth.getDate();
   }
-
   if (months < 0) {
     months += 12;
     years--;
   }
 
-  if(minseconds < 0){
-    minseconds=Math.abs(minseconds)
-  }
-
-  if(minutes<10){
-    if(seconds <10){
-      return `${years}年${months}ヵ月${days}日${hours}時間0${minutes}分0${seconds}.${minseconds}秒`;
-    }else{
-      return `${years}年${months}ヵ月${days}日${hours}時間0${minutes}分${seconds}.${minseconds}秒`;
-    }
-  }else{
-    if(seconds <10){
-      return `${years}年${months}ヵ月${days}日${hours}時間${minutes}分0${seconds}.${minseconds}秒`;
-    }else{
-      return `${years}年${months}ヵ月${days}日${hours}時間${minutes}分${seconds}.${minseconds}秒`;
-    }
-  }
+  return `${years}年${months}ヵ月${days}日${hours}時間${pad(minutes)}分${pad(seconds)}.${pad(milliseconds, 3)}秒`;
 }
 
 // コンポーネントが破棄されたらタイマーも解除
