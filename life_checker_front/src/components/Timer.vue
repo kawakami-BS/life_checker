@@ -8,7 +8,7 @@ const countdownText = ref('');
 const countupText = ref('')
 let timer = null;
 const showTimer=ref(false);
-const birthdaytime =new Date(props.user.birthday);
+const birthdayTime =new Date(props.user.birthday);
 
 const now=new Date();
 //表示のための処理
@@ -28,11 +28,10 @@ function toJPDate(dateStr) {
 async function startCountdown(){
   clearInterval(timer);
   const deadlineDate = props.user.days_left*365.2425 * 24 * 60 * 60 * 1000;
-  const target=birthdaytime.getTime()+deadlineDate;
+  const target=birthdayTime.getTime()+deadlineDate;
   timer = setInterval(() => {
-  countdownText.value=formatDuration(target);
-  countupText.value=formatDuration(birthdaytime)
-
+    countdownText.value=formatDuration(target);
+    countupText.value=formatDuration(birthdayTime)
   }, 1);
 }
 
