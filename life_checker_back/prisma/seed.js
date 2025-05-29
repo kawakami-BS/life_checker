@@ -10,8 +10,8 @@ const { PrismaClient } = require('@prisma/client');
   if(userCount === 0) {
     await prisma.users.createMany({
       data: [
-        { name: "私", birthday: parseYMDWithSlash("2000/1/1"),todayDate: new Date(),deadlineDate: parseYMDWithSlash("2050/1/1"),},
-        { name: "あなた", birthday: parseYMDWithSlash("2000/1/1"),todayDate: new Date(),deadlineDate: parseYMDWithSlash("2050/1/1"),}
+        { name: "私", birthday: parseYMDWithSlash("2004/9/8"),leftDate: new Date(),days_left: 50,},
+        { name: "あなた", birthday: parseYMDWithSlash("2004/9/8"),leftDate: new Date(),days_left: 100,}
       ],
     });
   }

@@ -17,6 +17,6 @@ model users{
   id Int @default(autoincrement())@id
   name String
   birthday DateTime
-  todayDate DateTime @default(now())
-  deadlineDate DateTime  
+  leftDate DateTime @default(now())
+  days_left Int  
 }
